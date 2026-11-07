@@ -1,5 +1,6 @@
 """Rolling historical VaR backtesting via Kupiec POF and Christoffersen IND."""
 
+import numpy as np
 import pandas as pd
 
 from .metrics import christoffersen_test
@@ -34,24 +35,28 @@ def backtest_var(
         pof_pass, ind_pass.
     """
     rows = []
+    pos = pd.Series(np.arange(len(returns)), index=returns.index)
 
     for t in returns.columns:
+        # VaR is computed on the full, contiguous return series and lagged one
+        # day, so the VaR applied to day t uses only returns up to t-1.
+        var_full = (
+            returns[t].rolling(var_window, min_periods=min_periods).quantile(alpha).shift(1)
+        )
+        viol_full = (returns[t] < var_full).astype(float).where(var_full.notna())
+
         segments = [
-            ("Full Sample", returns[t]),
-            ("Low-Vol",     returns.loc[regime == "Low-Vol",  t]),
-            ("High-Vol",    returns.loc[regime == "High-Vol", t]),
+            ("Full Sample", pd.Series(True, index=returns.index)),
+            ("Low-Vol", regime == "Low-Vol"),
+            ("High-Vol", regime == "High-Vol"),
         ]
-        for lbl, r in segments:
-            if len(r) < min_obs:
+        for lbl, mask in segments:
+            v = viol_full[mask.reindex(returns.index, fill_value=False)].dropna()
+            if mask.sum() < min_obs or len(v) < min_obs // 2:
                 continue
-
-            var_s = r.rolling(var_window, min_periods=min_periods).quantile(alpha)
-            r_aligned, var_aligned = r.dropna().align(var_s.dropna(), join="inner")
-            if len(r_aligned) < min_obs // 2:
-                continue
-
-            violations = (r_aligned < -var_aligned.abs()).astype(int)
-            ct = christoffersen_test(violations, alpha=alpha)
+            p_ = pos.loc[v.index].to_numpy()
+            adjacent = np.diff(p_) == 1
+            ct = christoffersen_test(v.astype(int), alpha=alpha, adjacent=adjacent)
 
             rows.append(dict(
                 Ticker=t,

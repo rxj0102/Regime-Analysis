@@ -59,7 +59,7 @@ def calc_metrics(returns: pd.Series, label: str) -> dict:
     )
 
 
-def christoffersen_test(violations: pd.Series, alpha: float = 0.05) -> dict:
+def christoffersen_test(violations: pd.Series, alpha: float = 0.05, adjacent=None) -> dict:
     """Christoffersen (1998) conditional coverage test for VaR backtesting.
 
     Tests two null hypotheses via likelihood-ratio statistics:
@@ -73,6 +73,11 @@ def christoffersen_test(violations: pd.Series, alpha: float = 0.05) -> dict:
     Args:
         violations: Binary integer series (1 = VaR breach, 0 = no breach).
         alpha:      Target violation rate, e.g. 0.05 for 95% VaR.
+        adjacent:   Optional boolean array of length ``len(violations) - 1``;
+                    entry i is True when observations i and i+1 are
+                    consecutive trading days.  Only such pairs enter the
+                    independence transition counts (needed when the series
+                    is a regime subset with gaps).  Default: all pairs.
 
     Returns:
         Dict with keys: T, N, pi_hat, lr_pof, p_pof, lr_ind, p_ind.
@@ -93,10 +98,11 @@ def christoffersen_test(violations: pd.Series, alpha: float = 0.05) -> dict:
         p_pof = float(1 - chi2.cdf(lr_pof, df=1))
 
     # --- Christoffersen Independence ---
-    n00 = int(np.sum((v[:-1] == 0) & (v[1:] == 0)))
-    n01 = int(np.sum((v[:-1] == 0) & (v[1:] == 1)))
-    n10 = int(np.sum((v[:-1] == 1) & (v[1:] == 0)))
-    n11 = int(np.sum((v[:-1] == 1) & (v[1:] == 1)))
+    adj = np.ones(max(T - 1, 0), dtype=bool) if adjacent is None else np.asarray(adjacent, dtype=bool)
+    n00 = int(np.sum((v[:-1] == 0) & (v[1:] == 0) & adj))
+    n01 = int(np.sum((v[:-1] == 0) & (v[1:] == 1) & adj))
+    n10 = int(np.sum((v[:-1] == 1) & (v[1:] == 0) & adj))
+    n11 = int(np.sum((v[:-1] == 1) & (v[1:] == 1) & adj))
 
     pi01 = n01 / (n00 + n01) if (n00 + n01) > 0 else 0.0
     pi11 = n11 / (n10 + n11) if (n10 + n11) > 0 else 0.0
