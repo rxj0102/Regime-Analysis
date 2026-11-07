@@ -1,5 +1,7 @@
 # Regime-Dependent Risk & Performance Attribution
 
+[![CI](https://github.com/rxj0102/Regime-Analysis/actions/workflows/ci.yml/badge.svg)](https://github.com/rxj0102/Regime-Analysis/actions/workflows/ci.yml)
+
 Empirical study showing that CAPM beta, volatility, VaR, and Sharpe ratio all vary materially across market regimes — and that full-sample averages are statistical artefacts that mask an asset's true risk profile.
 
 ---
