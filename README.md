@@ -19,6 +19,13 @@ Standard risk metrics (beta, Sharpe, VaR) are almost always reported as full-sam
 
 ---
 
+## Corrections
+
+- **VaR look-ahead.** The rolling historical VaR for day t included day t's own return. It is now lagged one day, so the VaR applied to day t uses data through t-1.
+- **Regime slices.** VaR was previously estimated on each regime subset (non-contiguous days), and the independence test treated gaps as consecutive days. VaR is now estimated on the full series, and only truly adjacent trading days enter the transition counts.
+- Backtest tables and figures in the notebook predate this change; re-run it to refresh them.
+
+
 ## Key Results
 
 | Finding | Detail |
