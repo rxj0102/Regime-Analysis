@@ -127,3 +127,32 @@ The current pipeline fits a single GARCH model per asset, then slices results by
 
 ### 3. Out-of-Sample Rolling Backtest with Expanding Window
 All current results are in-sample — the regime threshold, CAPM betas, and risk metrics are computed on the full 2019–2024 period. A rigorous evaluation would use an expanding (or rolling) window: estimate the model up to date *t*, generate risk forecasts for *t+1*, then roll forward. This enables proper walk-forward validation of VaR coverage and Sharpe stability, and tests whether the regime signal is exploitable in real time.
+
+## Reproducibility
+
+### Data availability
+
+All inputs come from free, public sources. No paid data or API keys are required unless noted.
+
+- Yahoo Finance via the yfinance package (free, no key)
+- Files shipped in the `data/` folder of this repository
+
+### Computational requirements
+
+- Python 3.12.3. Every dependency version is pinned in `uv.lock`.
+- Checked on Linux x86_64 with 2 CPU cores and 8 GB RAM. No GPU is needed.
+
+```bash
+pip install uv     # once
+uv sync            # installs the exact pinned environment
+uv run pytest -q   # runs the test suite
+```
+
+### Runtime
+
+The test suite (22 tests) finishes in about 34 seconds on the machine above, including any data downloads it triggers.
+
+### Citation
+
+Citation metadata is in `CITATION.cff`. GitHub turns it into a Cite this repository button on the repo page.
+
