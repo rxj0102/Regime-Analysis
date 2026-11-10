@@ -28,6 +28,17 @@ def load_prices(
         DataFrame of adjusted close prices; rows = dates, columns = tickers.
         Rows with any missing value are dropped.
     """
+    import os
+    from pathlib import Path
+
+    # Yahoo serves slightly different adjusted history at different times, so the
+    # download behind the README results is frozen in data/snapshot/. Set
+    # REGIME_REFRESH_DATA=1 to download again.
+    snap = Path(__file__).resolve().parents[1] / "data" / "snapshot" / f"close_{start}_{end}.csv"
+    if snap.exists() and os.environ.get("REGIME_REFRESH_DATA") != "1":
+        cached = pd.read_csv(snap, index_col=0, parse_dates=True)
+        if set(tickers) <= set(cached.columns):
+            return cached[list(tickers)].dropna(how="any")
     raw = yf.download(
         tickers,
         start=start,
@@ -37,7 +48,11 @@ def load_prices(
         progress=False,
     )
     prices = pd.DataFrame({t: raw[(t, "Close")] for t in tickers}).dropna(how="any")
-    return prices
+    if prices.empty:
+        raise RuntimeError("yfinance returned no prices")
+    snap.parent.mkdir(parents=True, exist_ok=True)
+    prices.to_csv(snap, float_format="%.6f", index_label="Date")
+    return pd.read_csv(snap, index_col=0, parse_dates=True)[list(tickers)]
 
 
 def log_returns(prices: pd.DataFrame) -> pd.DataFrame:
