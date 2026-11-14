@@ -2,7 +2,6 @@
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
 from scipy import stats
 from statsmodels.tsa.stattools import adfuller
 
@@ -10,37 +9,33 @@ from .config import END_DATE, START_DATE, TICKERS
 
 
 def load_prices(
+    tdef load_prices(
     tickers: list[str] = TICKERS,
     start: str = START_DATE,
     end: str = END_DATE,
 ) -> pd.DataFrame:
-    """Download split/dividend-adjusted closing prices from Yahoo Finance.
+    """Total return indices for the open data stand ins (Ken French Data Library).
 
-    auto_adjust=True ensures 'Close' is corrected for splits and dividends.
-    Without it, NVDA's 4-for-1 split (Jul 2021) creates artificial return spikes.
-
-    Args:
-        tickers: Ticker symbols to download.
-        start:   Start date string (YYYY-MM-DD).
-        end:     End date string (YYYY-MM-DD).
+    TECH, FIN and STAPLES are the BusEq, Money and NoDur 12 industry portfolios
+    (value weighted); SPY is the US market (Mkt-RF + RF). No Yahoo Finance.
 
     Returns:
-        DataFrame of adjusted close prices; rows = dates, columns = tickers.
+        DataFrame of total return index levels; rows = dates, columns = tickers.
         Rows with any missing value are dropped.
     """
-    raw = yf.download(
-        tickers,
-        start=start,
-        end=end,
-        group_by="ticker",
-        auto_adjust=True,
-        progress=False,
-    )
-    prices = pd.DataFrame({t: raw[(t, "Close")] for t in tickers}).dropna(how="any")
-    return prices
+    from .opendata import french
+
+    ind = french("12_Industry_Portfolios_daily", start=start, end=end)
+    ff = french("F-F_Research_Data_Factors_daily", start=start, end=end)
+    rets = pd.DataFrame({
+        "TECH": ind["BusEq"], "FIN": ind["Money"], "STAPLES": ind["NoDur"],
+        "SPY": ff["Mkt-RF"] + ff["RF"],
+    })[list(tickers)].dropna(how="any")
+    rets = rets[rets.index < pd.Timestamp(end)]
+    return 100 * (1 + rets).cumprod()
 
 
-def log_returns(prices: pd.DataFrame) -> pd.DataFrame:
+: pd.DataFrame) -> pd.DataFrame:
     """Compute log returns from an adjusted-price DataFrame.
 
     Args:
