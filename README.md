@@ -160,3 +160,10 @@ The current pipeline fits a single GARCH model per asset, then slices results by
 
 ### 3. Out-of-Sample Rolling Backtest with Expanding Window
 The regime threshold is now point in time, but CAPM betas and risk metrics are still estimated in-sample over 2019 to 2023. A rigorous evaluation would use an expanding (or rolling) window: estimate the model up to date *t*, generate risk forecasts for *t+1*, then roll forward. This enables proper walk-forward validation of VaR coverage and Sharpe stability, and tests whether the regime signal is exploitable in real time.
+## Data snapshot
+
+`data/open_data_manifest.json` records every open data file behind the results above (SHA-256, rows, first and last date). Ken French and FRED occasionally revise history; after a fresh download, check whether the inputs still match with:
+
+```bash
+python -c "from src.opendata import verify_manifest; print(verify_manifest('data/open_data_manifest.json'))"
+```
