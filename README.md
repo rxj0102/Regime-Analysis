@@ -6,6 +6,21 @@ Empirical study showing that CAPM beta, volatility, VaR, and Sharpe ratio all va
 
 ---
 
+## Data
+
+Free open data from the Ken French Data Library (no Yahoo Finance), daily, 2019-01-02 to 2023-12-29 (1,258 days):
+
+| Label | Series | Replaces |
+|---|---|---|
+| TECH | 12 industry portfolio BusEq (business equipment), value weighted | NVDA |
+| FIN | 12 industry portfolio Money (finance) | JPM |
+| STAPLES | 12 industry portfolio NoDur (consumer nondurables) | PG |
+| SPY | US market, Mkt-RF + RF | SPY |
+
+Industry portfolios are diversified, so they are smoother than the single stocks the study used before. Read the results as sector level, not stock level.
+
+---
+
 ## Problem & Methodology
 
 Standard risk metrics (beta, Sharpe, VaR) are almost always reported as full-sample averages. This paper tests whether those averages are informative or misleading.
@@ -25,19 +40,34 @@ Standard risk metrics (beta, Sharpe, VaR) are almost always reported as full-sam
 
 - **VaR look-ahead.** The rolling historical VaR for day t included day t's own return. It is now lagged one day, so the VaR applied to day t uses data through t-1.
 - **Regime slices.** VaR was previously estimated on each regime subset (non-contiguous days), and the independence test treated gaps as consecutive days. VaR is now estimated on the full series, and only truly adjacent trading days enter the transition counts.
-- Backtest tables and figures in the notebook predate this change; re-run it to refresh them.
+- The notebook has been re-run after these fixes on the open data above.
 
 
 ## Key Results
 
+All numbers are copied from the executed notebook `07_regime_analysis.ipynb`. Regimes: 643 Low-Vol and 614 High-Vol days (threshold 0.00973 daily sigma of SPY).
+
+| Asset | Low-Vol Sharpe | High-Vol Sharpe | Full Sharpe | Low-Vol CVaR95 | High-Vol CVaR95 | CVaR multiple |
+|---|---|---|---|---|---|---|
+| TECH | 2.011 | 0.244 | 0.784 | -2.53% | -4.92% | 1.94x |
+| FIN | 1.383 | -0.013 | 0.388 | -2.18% | -5.20% | 2.39x |
+| STAPLES | 0.552 | 0.291 | 0.356 | -1.65% | -3.67% | 2.22x |
+| SPY | 1.631 | 0.189 | 0.588 | -1.87% | -4.39% | 2.35x |
+
+| Asset | Full beta | Low-Vol beta | High-Vol beta | Change |
+|---|---|---|---|---|
+| TECH | 1.161 | 1.246 | 1.144 | -8.2% |
+| FIN | 1.071 | 0.991 | 1.088 | +9.8% |
+| STAPLES | 0.686 | 0.592 | 0.706 | +19.3% |
+
 | Finding | Detail |
 |---|---|
-| **Beta non-stationarity** | All three assets show Δβ > 0 across regimes — market exposure increases by 20–60% in High-Vol periods, exactly when diversification is needed most. |
-| **Sharpe reversal** | Full-sample Sharpe ratios are positive for all assets, yet High-Vol Sharpe ratios are negative — the average conceals regime-specific loss. |
-| **CVaR multiplier** | High-Vol CVaR is 2–4× Low-Vol CVaR across assets; Historical VaR underestimates tail risk under normal regimes and overestimates it during crises. |
-| **VaR violation clustering** | Full-sample rolling VaR fails the Christoffersen IND test — violations cluster during stress, violating the i.i.d. assumption of standard backtesting. |
-| **GARCH > EWMA** | GARCH(1,1) with Student-t or Skewed-t errors wins by AIC on all four assets; EWMA consistently underestimates vol persistence (α + β). |
-| **Stress P&L** | Equal-weight portfolio lost ~20% (≈ $200k on $1M) in the COVID crash and ~15% in the 2022 rate shock. |
+| **Beta shifts with the regime, not always up** | FIN and STAPLES become more market exposed in High-Vol periods (+9.8% and +19.3%), while TECH beta falls 8.2%. |
+| **Sharpe collapses in High-Vol** | Every asset's Sharpe is far lower in High-Vol than in Low-Vol; FIN's turns slightly negative (-0.013). The full sample average hides this. |
+| **CVaR roughly doubles** | High-Vol CVaR95 is 1.9x to 2.4x Low-Vol CVaR95 (stress multiple as reported by the notebook). |
+| **VaR violations cluster** | Full sample rolling VaR has correct coverage for all four assets but fails the Christoffersen IND test for FIN, STAPLES and SPY (p = 0.0000, 0.0127, 0.0066). In High-Vol periods the VaR is too conservative (2.9% to 3.4% exceedances vs 5%). |
+| **Skewed-t GARCH wins** | Skewed-t errors give the best AIC for all four series; alpha + beta persistence is 0.966 to 0.987. |
+| **Stress P&L** | Equal weight portfolio: -34.9% in the 2020 COVID crash window and -21.3% in the 2022 rate shock window. FIN fell 43.3% in 2020; STAPLES only 7.8% in 2022. |
 
 ---
 
@@ -45,7 +75,7 @@ Standard risk metrics (beta, Sharpe, VaR) are almost always reported as full-sam
 
 | Library | Purpose |
 |---|---|
-| `yfinance` | Daily OHLCV download (split/dividend-adjusted) |
+| `src/opendata.py` | Ken French Data Library download and cache |
 | `pandas` / `numpy` | Data manipulation, log returns, rolling statistics |
 | `statsmodels` | OLS + HC3 robust SEs, ADF stationarity test |
 | `arch` | GARCH(1,1) with Normal / Student-t / Skewed-t errors |
@@ -70,7 +100,7 @@ Regime-Analysis/
 │   ├── stress.py               # Historical scenario stress testing
 │   └── plots.py                # All visualisation functions
 ├── notebooks/
-│   └── regime_analysis.ipynb   # Clean, end-to-end analysis notebook
+│   (none; the notebook is 07_regime_analysis.ipynb at the repo root)
 ├── tests/
 │   └── test_metrics.py         # Unit tests for metrics and backtesting
 ├── data/                       # Generated outputs (plots saved here)
@@ -89,11 +119,10 @@ pip install -r requirements.txt
 
 **2. Run the notebook**
 ```bash
-cd notebooks
-jupyter lab regime_analysis.ipynb
+jupyter lab 07_regime_analysis.ipynb
 ```
 
-The notebook fetches data directly from Yahoo Finance — no local data files required.
+The notebook downloads Ken French data on first run (no API key) and caches it in `data/open_cache/`.
 
 **3. Run tests**
 ```bash
