@@ -1,7 +1,7 @@
 .PHONY: reproduce render check test
 
-reproduce:  ## execute the notebook from data/snapshot/ and refresh the README
-	cd notebooks && uv run --with nbconvert --with ipykernel jupyter nbconvert --to notebook --execute regime_analysis.ipynb --output /tmp/regime_executed.ipynb --ExecutePreprocessor.timeout=1200
+reproduce:  ## execute the notebook on open data, write results/ and outputs/, refresh the README
+	MPLBACKEND=Agg uv run --with nbconvert --with ipykernel jupyter nbconvert --to notebook --execute --inplace 07_regime_analysis.ipynb --ExecutePreprocessor.timeout=1200
 	uv run python scripts/render_readme.py
 
 render:
