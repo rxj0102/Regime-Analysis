@@ -29,3 +29,6 @@ env/
 .idea/
 *.swp
 *.swo
+
+# open data cache
+data/open_cache/
