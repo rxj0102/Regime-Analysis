@@ -6,7 +6,9 @@ import seaborn as sns
 # ---------------------------------------------------------------------------
 # Universe & data range
 # ---------------------------------------------------------------------------
-TICKERS: list[str] = ["NVDA", "JPM", "PG", "SPY"]
+# Open data stand ins (Ken French): TECH = BusEq, FIN = Money, STAPLES = NoDur
+# industry portfolios, SPY = US market (Mkt-RF + RF).
+TICKERS: list[str] = ["TECH", "FIN", "STAPLES", "SPY"]
 START_DATE: str = "2019-01-01"
 END_DATE: str = "2024-01-01"
 
@@ -47,9 +49,9 @@ COLORS: dict[str, str] = {
     "Full Sample": "#3498db",
 }
 TICKER_COLORS: dict[str, str] = {
-    "NVDA": "#9b59b6",
-    "JPM":  "#e67e22",
-    "PG":   "#1abc9c",
+    "TECH":    "#9b59b6",
+    "FIN":     "#e67e22",
+    "STAPLES": "#1abc9c",
     "SPY":  "#2c3e50",
 }
 
