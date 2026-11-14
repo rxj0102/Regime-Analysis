@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/rxj0102/Regime-Analysis/actions/workflows/ci.yml/badge.svg)](https://github.com/rxj0102/Regime-Analysis/actions/workflows/ci.yml)
 
-Empirical study showing that CAPM beta, volatility, VaR, and Sharpe ratio all vary materially across market regimes — and that full-sample averages are statistical artefacts that mask an asset's true risk profile.
+Empirical study showing that CAPM beta, volatility, VaR, and Sharpe ratio all vary materially across market regimes, and that full-sample averages are statistical artefacts that mask an asset's true risk profile.
 
 ---
 
@@ -28,11 +28,11 @@ Standard risk metrics (beta, Sharpe, VaR) are almost always reported as full-sam
 **Approach:**
 
 1. **Regime detection**: the market's 30-day rolling volatility at t-1 is compared with its expanding median up to t-1, so labels use no future data (an earlier version used the full-sample median).
-2. **Per-regime risk metrics** — annualised return, volatility, Sharpe, Sortino, max drawdown, Calmar, 95% VaR and CVaR are computed separately for each regime.
-3. **Regime-conditional CAPM** — OLS with HC3 heteroskedasticity-robust standard errors is fit per regime, revealing beta instability (assets correlate more with the market during crises).
-4. **Volatility forecasting** — EWMA (λ = 0.94, RiskMetrics) and GARCH(1,1) are compared; the best error distribution (Normal / Student-t / Skewed-t) is selected by AIC.
-5. **VaR backtesting** — rolling historical VaR is validated with Kupiec's POF test (correct coverage) and Christoffersen's IND test (no violation clustering).
-6. **Stress testing** — equal-weight portfolio P&L and CVaR are computed during the 2020 COVID crash and the 2022 rate shock.
+2. **Per-regime risk metrics**: annualised return, volatility, Sharpe, Sortino, max drawdown, Calmar, 95% VaR and CVaR are computed separately for each regime.
+3. **Regime-conditional CAPM**: OLS with HC3 heteroskedasticity-robust standard errors is fit per regime, revealing beta instability (assets correlate more with the market during crises).
+4. **Volatility forecasting**: EWMA (λ = 0.94, RiskMetrics) and GARCH(1,1) are compared; the best error distribution (Normal / Student-t / Skewed-t) is selected by AIC.
+5. **VaR backtesting**: rolling historical VaR is validated with Kupiec's POF test (correct coverage) and Christoffersen's IND test (no violation clustering).
+6. **Stress testing**: equal-weight portfolio P&L and CVaR are computed during the 2020 COVID crash and the 2022 rate shock.
 
 ---
 
