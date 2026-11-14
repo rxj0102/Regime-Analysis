@@ -55,7 +55,7 @@ def run_stress_tests(
                 ((cc - cc.expanding().max()) / cc.expanding().max()).min()
             )
             stress_beta = (
-                fit_capm(r.values, window["SPY"].values)[1]
+                fit_capm(r.values, window["SPY"].values, min_obs=20)[1]
                 if t != "SPY" else 1.0
             )
             asset_records.append(dict(

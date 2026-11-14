@@ -127,3 +127,18 @@ class TestChristoffersenTest:
         v = pd.Series([0] * 950 + [1] * 50)
         r = christoffersen_test(v, alpha=0.05)
         assert r["p_ind"] < 0.05
+
+
+def test_point_in_time_regimes_do_not_use_future_data():
+    import numpy as np
+    import pandas as pd
+    from src.regimes import classify_regimes
+    rng = np.random.default_rng(1)
+    idx = pd.bdate_range("2015-01-01", periods=800)
+    r = pd.DataFrame({"SPY": rng.normal(0, 0.01, 800)}, index=idx)
+    base, _, _ = classify_regimes(r, point_in_time=True)
+    shocked = r.copy()
+    shocked.iloc[700:, 0] *= 10  # change only the future
+    alt, _, _ = classify_regimes(shocked, point_in_time=True)
+    common = base.index[base.index < idx[700]]
+    pd.testing.assert_series_equal(base.loc[common], alt.loc[common])
