@@ -33,7 +33,10 @@ def fit_ewma(
     ewma_var.iloc[:warmup] = rolling_init
 
     ewma_vol = np.sqrt(ewma_var)
-    fcast = float(np.sqrt(lam * ewma_var.iloc[-1] + (1 - lam) * returns.iloc[-1] ** 2))
+    # With adjust=False the last value already is lam * v_{T-1} + (1 - lam) * r_T^2,
+    # i.e. the RiskMetrics forecast for T+1. Applying the update again would
+    # count r_T twice.
+    fcast = float(np.sqrt(ewma_var.iloc[-1]))
     return ewma_vol, fcast
 
 

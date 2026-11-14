@@ -1,0 +1,22 @@
+[project]
+name = "regime-analysis"
+version = "0.1.0"
+description = "Research code for Regime-Analysis"
+requires-python = ">=3.11"
+dependencies = [
+    "arch>=6.3.0",
+    "matplotlib>=3.8.0",
+    "numpy>=1.26.0",
+    "pandas>=2.2.0",
+    "scipy>=1.12.0",
+    "seaborn>=0.13.0",
+    "statsmodels>=0.14.0",
+    "yfinance>=0.2.36",
+    "pytest>=8.0.0"
+]
+
+[dependency-groups]
+dev = ["pytest>=7.4"]
+
+[tool.uv]
+package = false
