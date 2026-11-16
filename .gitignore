@@ -32,3 +32,6 @@ env/
 
 # open data cache
 data/open_cache/
+
+# Figures written by scripts/reproduce.py are part of the results
+!results/figures/*.png
