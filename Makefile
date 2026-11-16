@@ -1,7 +1,7 @@
-.PHONY: reproduce render check test
+.PHONY: reproduce render check test data
 
-reproduce:  ## execute the notebook on open data, write results/ and outputs/, refresh the README
-	MPLBACKEND=Agg uv run --with nbconvert --with ipykernel jupyter nbconvert --to notebook --execute --inplace 07_regime_analysis.ipynb --ExecutePreprocessor.timeout=1200
+reproduce:  ## run the study from data/snapshot/ and refresh the README
+	uv run python scripts/reproduce.py
 	uv run python scripts/render_readme.py
 
 render:
@@ -12,3 +12,6 @@ check:
 
 test:
 	uv run python -m pytest -q
+
+data:  ## download the returns again
+	uv run python -m src.data
